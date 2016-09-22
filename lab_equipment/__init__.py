@@ -14,16 +14,13 @@ class LabEq(object):
         '''
         self.name = ""
         
-    def init(self):
+    def open(self):
+        raise NotImplementedError
+    
+    def close(self):
         raise NotImplementedError
     
     def reset(self):
-        raise NotImplementedError
-    
-    def turn_on(self):
-        raise NotImplementedError
-    
-    def turn_off(self):
         raise NotImplementedError
     
     def get_state(self):

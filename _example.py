@@ -9,6 +9,8 @@ import lab_equipment.visa
 #if __name__ == '__main__':
 labEq1 = lab_equipment.visa.LabEqVisa()
 
+labEq1.write('ble')
+
 try:
     labEq1.init('USB0::0x0699::0x0401::C021704::INSTR')
 except NotImplementedError:

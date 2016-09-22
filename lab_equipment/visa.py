@@ -16,16 +16,32 @@ class LabEqVisa(lab_equipment.LabEq):
         '''
         Constructor
         '''
-        self.resource_name = 'Unknawn'
-        self.resource = None;
+        self._resource_name = 'Unknawn'
+        self._resource = None;
         super(LabEqVisa,self).__init__()
         
-    def init(self, resource_name = ''):
+    def open(self, resource_name = ''):
         if resource_name != '':
-            self.resource_name = resource_name            
+            self._resource_name = resource_name            
         rm = pyvisa.ResourceManager()
         try:
-            self.resource = rm.open_resource(resource_name)
+            self._resource = rm.open_resource(resource_name)
         except pyvisa.errors.VisaIOError:
-            print('visa: Resource not found!')
+            self._resource = None
             raise IOError
+        
+    def close(self):
+        if self._resource != None:
+            self._resource.close()
+            self._resource = None
+            
+    def reset(self):
+        self.write("*RST")
+        
+    def write(self, command):
+        return self._resource.write(command)
+    
+    def query(self, command):
+        return self._resource.query(command)
+        
+        

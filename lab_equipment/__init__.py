@@ -4,6 +4,7 @@ Created on 22 wrz 2016
 @author: Konrad Rutkowski
 '''
 
+
 class LabEq(object):
     '''
     classdocs
@@ -23,5 +24,5 @@ class LabEq(object):
     def reset(self):
         raise NotImplementedError
     
-    def get_state(self):
-        raise NotImplementedError
+#     def get_state(self):
+#         raise NotImplementedError

@@ -5,6 +5,7 @@ Created on 26 wrz 2016
 '''
 
 import lab_equipment.visa
+import numpy
 
 
 class LabEqScope(lab_equipment.visa.LabEqVisa):
@@ -62,5 +63,52 @@ class LabEqScope(lab_equipment.visa.LabEqVisa):
         self.write('ACQ:STOPAfter SEQ')
         self.write('ACQ:STATE RUN')
 
-    def get_data(self):
-        return None
+    def get_data(self, channel_list):
+        
+        if not isinstance(channel_list, list):
+            channel_list = [channel_list]
+
+        partLength = 1000
+        
+        res = self.query('HORIZONTAL:RECORDLENGTH?')
+        recordLength = int(res.split(' ')[1])
+
+        self.write(':DATa:SOUrce CH1')
+        self.write(':WFMOutpre:ENCdg ASCii')
+        self.write(':WFMOutpre:BYT_Nr 2')
+        
+        res = self.query(':WFMOutpre?')
+        wfm_info = res.split(';')    
+        xzero = float([x for x in wfm_info if x.find('XZE',0,3) > -1][0].split(' ')[1])
+        xinc = float([x for x in wfm_info if x.find('XIN',0,3) > -1][0].split(' ')[1])
+        if not xzero or not xinc:
+            return []
+
+        data_out = numpy.arange(xzero,(recordLength-1)*xinc + xzero,xinc)
+
+        if recordLength < partLength:
+            partLength = recordLength       
+    
+        for channel_no in channel_list:
+            self.write(':DATa:SOUrce CH' + str(channel_no))
+            
+            res = self.query(':WFMOutpre?')
+            wfm_info = res.split(';')    
+            ymult = float([x for x in wfm_info if x.find('YMU',0,3) > -1][0].split(' ')[1])
+            yoff = float([x for x in wfm_info if x.find('YOF',0,3) > -1][0].split(' ')[1])
+            
+            data_tmp = []
+            partDone = 0
+            while partDone < recordLength:
+                self.write(':DATa:START ' + str(partDone + 1))
+                self.write(':DATa:STOP ' + str(partDone + partLength))            
+                res = self.query(":CURVE?")
+                res = res.split(' ')[1]
+                data_tmp = numpy.hstack((data_tmp,[float(i) for i in res.split(',')]))                                      
+                partDone = partDone + partLength
+            
+            data_tmp = (data_tmp - yoff).dot(ymult)     
+            data_out = numpy.vstack((data_out, data_tmp))
+        return data_out
+    
+    

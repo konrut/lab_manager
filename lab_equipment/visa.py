@@ -38,6 +38,7 @@ class LabEqVisa(lab_equipment.LabEq):
             
     def reset(self):
         self.write("*RST")
+        self.write("HEADER 1")
         
     def write(self, command):
         return self._resource.write(command)

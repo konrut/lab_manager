@@ -18,7 +18,7 @@ class LabEqVisa(lab_equipment.LabEq):
         Constructor
         '''
         super(LabEqVisa,self).__init__()
-        self._resource_name = resource_name
+        self.attrib['resource_name'] = resource_name
         self._resource = None        
         
     def open(self, resource_name = ''):
@@ -26,7 +26,7 @@ class LabEqVisa(lab_equipment.LabEq):
             self._resource_name = resource_name            
         rm = pyvisa.ResourceManager()
         try:
-            self._resource = rm.open_resource(self._resource_name)
+            self._resource = rm.open_resource(self.attrib['resource_name'])
         except pyvisa.errors.VisaIOError:
             self._resource = None
             raise IOError

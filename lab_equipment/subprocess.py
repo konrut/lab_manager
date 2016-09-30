@@ -23,32 +23,32 @@ class LabEqSubprocess(lab_equipment.LabEq):
         self.process = None
         self.log_file = None
         
-        self.path = path
+        self.attrib['path'] = path
         if working_dir != '' and working_dir[len(working_dir)-1] != '/':
             working_dir = working_dir + '/'
-        self.cwd = working_dir        
         
-        self.stdin_leading_seq = '>> '        
-        self.timeout_s = 1
+        self.attrib['cwd'] = working_dir  
+        self.attrib['stdin_leading_seq'] = '>> '        
+        self.attrib['timeout_s'] = 1
         
     def open(self):
         
         if self.process != None:
             raise IOError
         
-        if self.name != '':
-            self.log_file = open(self.cwd + self.name + '.log','w+')
+        if self.attrib['name'] != '':
+            self.log_file = open(self.attrib['cwd'] + self.name + '.log','w+')
         else:
-            self.log_file = open(self.cwd + 'stdout.log','w+')
+            self.log_file = open(self.attrib['cwd'] + 'stdout.log','w+')
         
-        if self.cwd != '':
-            cwd = self.cwd
+        if self.attrib['cwd'] != '':
+            cwd = self.self.attrib['cwd']
         else:
             cwd = None
-        self.process = subprocess.Popen(self.path, shell=False, stdin=subprocess.PIPE, stdout = self.log_file, universal_newlines = True, cwd = cwd)
+        self.process = subprocess.Popen(self.attrib['path'], shell=False, stdin=subprocess.PIPE, stdout = self.log_file, universal_newlines = True, cwd = cwd)
         
         time_start = time.time()        
-        while (time.time() - time_start) < self.timeout_s and not (0 < self.log_file.tell()):
+        while (time.time() - time_start) < self.attrib['timeout_s'] and not (0 < self.log_file.tell()):
             pass
         
         if self.process.poll() != None:
@@ -88,9 +88,9 @@ class LabEqSubprocess(lab_equipment.LabEq):
             raise IOError
         
         if timeout_s < 0:
-            timeout_s = self.timeout_s
+            timeout_s = self.attrib['timeout_s']
         
-        self.log_file.write('\n' + self.stdin_leading_seq + query + '\n')
+        self.log_file.write('\n' + self.attrib['stdin_leading_seq'] + query + '\n')
         self.log_file.flush()
         out_start = self.log_file.tell()
         

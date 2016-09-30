@@ -13,7 +13,7 @@ class LabEq(object):
         '''
         Constructor
         '''
-        self.name = ""
+        self.attrib = {'name': ''}
         
     def open(self):
         raise NotImplementedError

@@ -1,19 +1,19 @@
 '''
-Created on 26 wrz 2016
-
-@author: Konrad Rutkowski
+@package lab_equipment.scope
+@date 26 sep 2016
+@author Konrad Rutkowski
 '''
 
 import lab_equipment.visa
 import numpy
-
+import time
 
 class LabEqScope(lab_equipment.visa.LabEqVisa):
     '''
     classdocs
     '''
     
-    def __init__(self, resource_name):
+    def __init__(self, resource_name = ''):
         '''
         Constructor
         '''
@@ -62,6 +62,21 @@ class LabEqScope(lab_equipment.visa.LabEqVisa):
         
         self.write('ACQ:STOPAfter SEQ')
         self.write('ACQ:STATE RUN')
+    
+    def acq_state(self):
+        state_str = self.query('ACQuire:STATE?')
+        state_str = state_str.split(' ')[1]
+        return int(state_str)        
+    
+    def wait_for_acquire(self, timeout_sec = 0):
+        t1 = time.clock()
+        time_elapsed = 0
+        
+        while self.acq_state():
+            time_elapsed = time.clock() - t1
+            if time_elapsed > timeout_sec:
+                return -1
+        return 0
 
     def get_data(self, channel_list):
         
@@ -81,11 +96,12 @@ class LabEqScope(lab_equipment.visa.LabEqVisa):
         wfm_info = res.split(';')    
         xzero = float([x for x in wfm_info if x.find('XZE',0,3) > -1][0].split(' ')[1])
         xinc = float([x for x in wfm_info if x.find('XIN',0,3) > -1][0].split(' ')[1])
-        if not xzero or not xinc:
+
+        if not xinc:            
             return []
 
-        data_out = numpy.arange(xzero,(recordLength-1)*xinc + xzero,xinc)
-
+        data_out = numpy.linspace(xzero,(recordLength-1)*xinc + xzero, recordLength)        
+        
         if recordLength < partLength:
             partLength = recordLength       
     
@@ -107,7 +123,7 @@ class LabEqScope(lab_equipment.visa.LabEqVisa):
                 data_tmp = numpy.hstack((data_tmp,[float(i) for i in res.split(',')]))                                      
                 partDone = partDone + partLength
             
-            data_tmp = (data_tmp - yoff).dot(ymult)     
+            data_tmp = (data_tmp - yoff).dot(ymult)    
             data_out = numpy.vstack((data_out, data_tmp))
         return data_out
     

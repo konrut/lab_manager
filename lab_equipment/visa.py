@@ -1,7 +1,7 @@
-'''
-Created on 22 wrz 2016
-
-@author: Konrad Rutkowski
+'''!
+@package lab_equipment.visa
+@date 22 sep 2016
+@author Konrad Rutkowski
 '''
 
 import pyvisa
@@ -17,19 +17,27 @@ class LabEqVisa(lab_equipment.LabEq):
         '''
         Constructor
         '''
-        super(LabEqVisa,self).__init__()
-        self.attrib['resource_name'] = resource_name
+        super(LabEqVisa,self).__init__('scope')
+        self.resource_name = resource_name
         self._resource = None        
         
     def open(self, resource_name = ''):
         if resource_name != '':
-            self._resource_name = resource_name            
-        rm = pyvisa.ResourceManager()
+            self.resource_name = resource_name          
+              
         try:
-            self._resource = rm.open_resource(self.attrib['resource_name'])
+            rm = pyvisa.ResourceManager()
+        except OSError:
+            rm = pyvisa.ResourceManager('C:\\Windows\\system32\\visa32.dll')
+  
+        try:
+            self._resource = rm.open_resource(self.resource_name)
+            return 0
         except pyvisa.errors.VisaIOError:
+            print('Available resources:')
+            print(rm.list_resources())
             self._resource = None
-            raise IOError
+            return -1
         
     def close(self):
         if self._resource != None:
@@ -39,6 +47,13 @@ class LabEqVisa(lab_equipment.LabEq):
     def reset(self):
         self.write("*RST")
         self.write("HEADER 1")
+        
+    def get_resources(self):
+        try:
+            rm = pyvisa.ResourceManager()
+        except OSError:
+            rm = pyvisa.ResourceManager('C:\\Windows\\system32\\visa32.dll')
+        return rm.list_resources()        
         
     def write(self, command):
         return self._resource.write(command)

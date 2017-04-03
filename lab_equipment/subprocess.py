@@ -1,11 +1,12 @@
-'''
-Created on 28 wrz 2016
-
-@author: Konrad Rutkowski
+'''!
+@package lab_equipment.subprocess
+@date 28 sep 2016
+@author Konrad Rutkowski
 '''
 
 import subprocess
 import time
+import shlex
 
 import lab_equipment
 
@@ -15,29 +16,30 @@ class LabEqSubprocess(lab_equipment.LabEq):
     classdocs
     '''
 
-    def __init__(self, path = '', working_dir = ''):
+    def __init__(self, path = '', args = '', working_dir = ''):
         '''
         Constructor
         '''
-        super(LabEqSubprocess,self).__init__()
+        super(LabEqSubprocess,self).__init__('LabEqSubprocess')
         self.process = None
         self.log_file = None
         
-        self.attrib['path'] = path
+        self._add_attrib('path', path)
+        self._add_attrib('args', args)
         if working_dir != '' and working_dir[len(working_dir)-1] != '/':
             working_dir = working_dir + '/'
         
-        self.attrib['cwd'] = working_dir  
-        self.attrib['stdin_leading_seq'] = '>> '        
-        self.attrib['timeout_s'] = 1
+        self._add_attrib('cwd', working_dir)  
+        self._add_attrib('stdin_leading_seq', '>> ')       
+        self._add_attrib('timeout_s', 1)
         
     def open(self):
         
         if self.process != None:
             raise IOError
         
-        if self.attrib['name'] != '':
-            self.log_file = open(self.attrib['cwd'] + self.name + '.log','w+')
+        if self.attrib['name_id'] != '':
+            self.log_file = open(self.attrib['cwd'] + self.attrib['name_id'] + '.log','w+')
         else:
             self.log_file = open(self.attrib['cwd'] + 'stdout.log','w+')
         
@@ -45,7 +47,7 @@ class LabEqSubprocess(lab_equipment.LabEq):
             cwd = self.self.attrib['cwd']
         else:
             cwd = None
-        self.process = subprocess.Popen(self.attrib['path'], shell=False, stdin=subprocess.PIPE, stdout = self.log_file, universal_newlines = True, cwd = cwd)
+        self.process = subprocess.Popen(shlex.split(self.attrib['path'] + ' ' + self.attrib['args']), shell=False, stdin=subprocess.PIPE, stdout = self.log_file, universal_newlines = True, cwd = cwd)
         
         time_start = time.time()        
         while (time.time() - time_start) < self.attrib['timeout_s'] and not (0 < self.log_file.tell()):

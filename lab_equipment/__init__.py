@@ -1,20 +1,18 @@
+'''!
+@package lab_equipment
+@date 22 sep 2016
+@author Konrad Rutkowski
 '''
-Created on 22 wrz 2016
-
-@author: Konrad Rutkowski
-'''
-
 
 class LabEq(object):
-    '''
+    '''!
     classdocs
     '''
-    def __init__(self):
-        '''
+    def __init__(self, labeq_type, name_id = ''):
+        '''!
         Constructor
         '''
-        self.attrib = {'name': ''}
-        
+                
     def open(self):
         raise NotImplementedError
     
@@ -24,5 +22,5 @@ class LabEq(object):
     def reset(self):
         raise NotImplementedError
     
-#     def get_state(self):
-#         raise NotImplementedError
+    
+            
